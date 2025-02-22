@@ -1,0 +1,30 @@
+[package]
+name = "lib"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+[lints.rust]
+unused_must_use = "deny"
+rust_2018_idioms = "deny"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+
+cast_sign_loss = "allow"
+missing_errors_doc = "allow"
+naive_bytecount = "allow"    # no recommending crates
+
+# restrictions
+allow_attributes_without_reason = "deny"
+assertions_on_result_states = "deny"
+else_if_without_else = "deny"
+lossy_float_literal = "deny"
+map_with_unused_argument_over_ranges = "deny"
+non_zero_suggestions = "deny"
+pathbuf_init_then_push = "deny"
+rc_buffer = "deny"
+str_to_string = "deny"
+tests_outside_test_module = "deny"
+try_err = "deny"
