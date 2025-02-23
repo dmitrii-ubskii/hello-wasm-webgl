@@ -40,11 +40,11 @@ pub extern "C" fn init() {
 	let frag = compile_shader(
 		js::gl::FRAGMENT_SHADER,
 		"#version 300 es
-        precision highp float;
-        out vec4 outColor;
-        void main() {
-            outColor = vec4(gl_FragCoord.xyx * 0.001, 1);
-        }",
+		precision highp float;
+		out vec4 outColor;
+		void main() {
+			outColor = vec4(gl_FragCoord.xyx * 0.001, 1);
+		}",
 	);
 
 	let shader_program = link_shader_program(vert, frag);
