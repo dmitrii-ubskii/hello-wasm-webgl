@@ -1,11 +1,11 @@
 pub(super) mod gl {
 	unsafe extern "C" {
-		pub(crate) fn compile_shader(type_: u32, offset: usize, len: usize) -> usize;
+		pub(crate) fn compile_shader(type_: u32, ptr: *const u8, len: usize) -> usize;
 		pub(crate) fn link_shader_program(vert: usize, frag: usize) -> usize;
 		pub(crate) fn use_program(program: usize);
 		pub(crate) fn get_attrib_location(
 			shader_program: usize,
-			offset: usize,
+			ptr: *const u8,
 			len: usize,
 		) -> usize;
 		pub(crate) fn canvas_width() -> u32;
@@ -17,7 +17,7 @@ pub(super) mod gl {
 
 		pub(crate) fn create_buffer() -> usize;
 		pub(crate) fn bind_buffer(target: u32, buffer: usize) -> usize;
-		pub(crate) fn buffer_data(target: u32, size: usize, data: usize, usage: u32);
+		pub(crate) fn buffer_data(target: u32, size: usize, data: *const u8, usage: u32);
 
 		pub(crate) fn create_vertex_array() -> usize;
 		pub(crate) fn bind_vertex_array(vao: usize) -> usize;
@@ -45,5 +45,5 @@ pub(super) mod gl {
 }
 
 unsafe extern "C" {
-	pub(super) fn print(offset: usize, len: usize);
+	pub(super) fn print(ptr: *const u8, len: usize);
 }

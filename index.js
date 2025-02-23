@@ -4,10 +4,10 @@ var gl;
 var glObjects = [];
 
 var env = {};
-env.print = function (offset, len) { console.log(decode_string(offset, len)); };
+env.print = function (ptr, len) { console.log(decode_string(ptr, len)); };
 
-function decode_string(offset, len) {
-    var bytes = new Uint8Array(wasm.memory.buffer, offset, len);
+function decode_string(ptr, len) {
+    var bytes = new Uint8Array(wasm.memory.buffer, ptr, len);
     return new TextDecoder("utf8").decode(bytes);
 }
 
@@ -21,9 +21,9 @@ function resizeCanvas() {
     }
 }
 
-function glCompileShader(type, source_offset, source_len) {
+function glCompileShader(type, source_ptr, source_len) {
     var shader = gl.createShader(type);
-    gl.shaderSource(shader, decode_string(source_offset, source_len));
+    gl.shaderSource(shader, decode_string(source_ptr, source_len));
     gl.compileShader(shader);
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
         const info = gl.getShaderInfoLog(shader);
@@ -65,8 +65,8 @@ function glCreateVertexArray() {
     return index;
 }
 
-function glGetAttribLocation(program, str_offset, str_len) {
-    var name = decode_string(str_offset, str_len);
+function glGetAttribLocation(program, str_ptr, str_len) {
+    var name = decode_string(str_ptr, str_len);
     return gl.getAttribLocation(glObjects[program], name);
 }
 
@@ -94,7 +94,7 @@ function main() {
     env.viewport = (x, y, w, h) => gl.viewport(x, y, w, h);
     env.clear_color = (r, g, b, a) => gl.clearColor(r, g, b, a);
     env.clear = (mask) => gl.clear(mask);
-    env.draw_arrays = (mode, offset, count) => gl.drawArrays(mode, offset, count);
+    env.draw_arrays = (mode, ptr, count) => gl.drawArrays(mode, ptr, count);
 
 	env.create_buffer = glCreateBuffer;
 	env.bind_buffer = (target, buffer) => gl.bindBuffer(target, glObjects[buffer]);

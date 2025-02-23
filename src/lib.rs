@@ -11,14 +11,12 @@ fn panic(info: &core::panic::PanicInfo<'_>) -> ! {
 mod js;
 
 fn print(str: &str) {
-	let (offset, len) = str_into_parts(str);
-	unsafe { js::print(offset, len) };
+	let (ptr, len) = str_into_parts(str);
+	unsafe { js::print(ptr, len) };
 }
 
-fn str_into_parts(str: &str) -> (usize, usize) {
-	let offset = str.as_ptr().addr();
-	let len = str.len();
-	(offset, len)
+fn str_into_parts(str: &str) -> (*const u8, usize) {
+	(str.as_ptr(), str.len())
 }
 
 #[rustfmt::skip]
@@ -58,12 +56,12 @@ pub extern "C" fn init() {
 		let buffer = js::gl::create_buffer();
 		js::gl::bind_buffer(js::gl::ARRAY_BUFFER, buffer);
 
-		let positions_offset = TRIANGLE.as_ptr() as usize;
+		let positions_ptr = TRIANGLE.as_ptr().cast();
 		let positions_size = core::mem::size_of_val(&TRIANGLE);
 		js::gl::buffer_data(
 			js::gl::ARRAY_BUFFER,
 			positions_size,
-			positions_offset,
+			positions_ptr,
 			js::gl::STATIC_DRAW,
 		);
 
@@ -90,11 +88,11 @@ fn link_shader_program(vert: usize, frag: usize) -> usize {
 }
 
 fn compile_shader(shader_type: u32, source: &str) -> usize {
-	let (offset, len) = str_into_parts(source);
-	unsafe { js::gl::compile_shader(shader_type, offset, len) }
+	let (ptr, len) = str_into_parts(source);
+	unsafe { js::gl::compile_shader(shader_type, ptr, len) }
 }
 
 fn get_attrib_location(shader_program: usize, attribute_name: &str) -> usize {
-	let (offset, len) = str_into_parts(attribute_name);
-	unsafe { js::gl::get_attrib_location(shader_program, offset, len) }
+	let (ptr, len) = str_into_parts(attribute_name);
+	unsafe { js::gl::get_attrib_location(shader_program, ptr, len) }
 }
