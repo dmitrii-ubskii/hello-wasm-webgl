@@ -1,7 +1,10 @@
 [package]
-name = "lib"
+name = "wasm-hello"
 version = "0.1.0"
 edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
 
 [dependencies]
 
@@ -14,6 +17,7 @@ pedantic = { level = "warn", priority = -1 }
 
 cast_sign_loss = "allow"
 missing_errors_doc = "allow"
+missing_panics_doc = "allow"
 naive_bytecount = "allow"    # no recommending crates
 
 # restrictions
