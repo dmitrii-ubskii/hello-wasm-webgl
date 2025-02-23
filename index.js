@@ -75,7 +75,7 @@ function glVertexAttribPointer(index, size, type, normalized, stride, ptr) {
 }
 
 function glBufferData(target, size, data, usage) {
-    var buffer = new Float32Array(wasm.memory.buffer, data, size / 4);
+    var buffer = new Uint8Array(wasm.memory.buffer, data, size);
     gl.bufferData(target, buffer, usage);
 }
 
