@@ -1,0 +1,10 @@
+= Hello, WASM & WebGL
+
+Experiments writing a "raw" WASM module in Rust and hooking into WebGL.
+
+== Running
+
+1. Make sure the `wasm32-unknown-unknown` target is installed in rustup.
+1. Run `cargo build` or `cargo build --release`
+1. Symlink `target/wasm32-unknown-unknown/{profile}/wasm_hello.wasm` as `output.wasm`.
+1. Open `index.html` in your browser of choice.
