@@ -3,6 +3,9 @@ pub(super) mod gl {
 		pub(crate) fn compile_shader(type_: u32, source: *const i8) -> usize;
 		pub(crate) fn link_shader_program(vert: usize, frag: usize) -> usize;
 		pub(crate) fn use_program(program: usize);
+		pub(crate) fn get_uniform_location(program: usize, ptr: *const i8) -> usize;
+		pub(crate) fn uniform_2f(location: usize, v0: f32, v1: f32);
+
 		pub(crate) fn get_attrib_location(
 			shader_program: usize,
 			ptr: *const u8,

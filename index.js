@@ -16,6 +16,12 @@ function get_string(ptr) {
 	return new TextDecoder("utf8").decode(bytes);
 }
 
+function glObject(obj) {
+	var index = glObjects.length;
+	glObjects[index] = obj;
+	return index;
+}
+
 function resizeCanvas() {
 	var width = canvas.clientWidth;
 	var height = canvas.clientHeight;
@@ -34,10 +40,7 @@ function glCompileShader(type, source_ptr) {
 		const info = gl.getShaderInfoLog(shader);
 		console.log(info);
 	}
-
-	var index = glObjects.length;
-	glObjects[index] = shader;
-	return index;
+	return glObject(shader);
 }
 
 function glLinkShaderProgram(vert, frag) {
@@ -50,33 +53,12 @@ function glLinkShaderProgram(vert, frag) {
 		const info = gl.getProgramInfoLog(program);
 		console.log(info);
 	}
-
-	var index = glObjects.length;
-	glObjects[index] = program;
-	return index;
-}
-
-function glCreateBuffer() {
-	var buffer = gl.createBuffer();
-	var index = glObjects.length;
-	glObjects[index] = buffer;
-	return index;
-}
-
-function glCreateVertexArray() {
-	var vao = gl.createVertexArray();
-	var index = glObjects.length;
-	glObjects[index] = vao;
-	return index;
+	return glObject(program);
 }
 
 function glGetAttribLocation(program, str_ptr) {
 	var name = get_string(str_ptr);
 	return gl.getAttribLocation(glObjects[program], name);
-}
-
-function glVertexAttribPointer(index, size, type, normalized, stride, ptr) {
-	gl.vertexAttribPointer(index, size, type, normalized, stride, ptr);
 }
 
 function glBufferData(target, size, data, usage) {
@@ -101,14 +83,19 @@ function main() {
 	env.clear = (mask) => gl.clear(mask);
 	env.draw_arrays = (mode, ptr, count) => gl.drawArrays(mode, ptr, count);
 
-	env.create_buffer = glCreateBuffer;
+	env.create_buffer = () => glObject(gl.createBuffer());
 	env.bind_buffer = (target, buffer) => gl.bindBuffer(target, glObjects[buffer]);
 	env.buffer_data = glBufferData;
 
-	env.create_vertex_array = glCreateVertexArray;
+	env.create_vertex_array = () => glObject(gl.createVertexArray());
 	env.bind_vertex_array = (vao) => gl.bindVertexArray(glObjects[vao]);
-	env.vertex_attrib_pointer = glVertexAttribPointer;
+	env.vertex_attrib_pointer = (index, size, type, normalized, stride, ptr) =>
+		gl.vertexAttribPointer(index, size, type, normalized, stride, ptr);
 	env.enable_vertex_attrib_array = (index) => gl.enableVertexAttribArray(index);
+
+	env.get_uniform_location = (program, uniform) => 
+		glObject(gl.getUniformLocation(glObjects[program], get_string(uniform)));
+	env.uniform_2f = (loc, v0, v1) => gl.uniform2f(glObjects[loc], v0, v1);
 
 	fetch("output.wasm").then(res => res.arrayBuffer()).then(function (bytes) {
 		'use strict';

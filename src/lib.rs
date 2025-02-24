@@ -1,6 +1,9 @@
 #![no_std]
 
-use core::ffi::CStr;
+use core::{
+	ffi::CStr,
+	sync::atomic::{AtomicUsize, Ordering},
+};
 
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo<'_>) -> ! {
@@ -27,14 +30,18 @@ const TRIANGLE: [f32; 9] = [
 	 0.0,  0.6, 0.0,
 ];
 
+static SHADER: AtomicUsize = AtomicUsize::new(0);
+
 #[unsafe(no_mangle)]
 pub extern "C" fn init() {
 	let vert = compile_shader(
 		js::gl::VERTEX_SHADER,
 		c"#version 300 es
 		in vec4 position;
+		uniform vec2 screen_size;
 		void main() {
-			gl_Position = position;
+			float aspect_ratio = screen_size.y / screen_size.x;
+			gl_Position = vec4(position.x * aspect_ratio, position.y, position.zw);
 		}",
 	);
 
@@ -42,13 +49,17 @@ pub extern "C" fn init() {
 		js::gl::FRAGMENT_SHADER,
 		c"#version 300 es
 		precision highp float;
+		uniform vec2 screen_size;
 		out vec4 outColor;
 		void main() {
-			outColor = vec4(gl_FragCoord.xyx * 0.001, 1);
+			vec2 middle = screen_size * 0.5;
+			float r = min(middle.x, middle.y);
+			outColor = vec4((gl_FragCoord.xy - middle + vec2(r, r)) / r, 0, 1);
 		}",
 	);
 
 	let shader_program = link_shader_program(vert, frag);
+	SHADER.store(shader_program, Ordering::Relaxed);
 	unsafe { js::gl::use_program(shader_program) };
 
 	let position_attr_location = get_attrib_location(shader_program, "position");
@@ -77,6 +88,9 @@ pub extern "C" fn init() {
 #[unsafe(no_mangle)]
 pub extern "C" fn render() {
 	unsafe {
+		let location =
+			js::gl::get_uniform_location(SHADER.load(Ordering::Relaxed), c"screen_size".as_ptr());
+		js::gl::uniform_2f(location, js::gl::canvas_width() as f32, js::gl::canvas_height() as f32);
 		js::gl::viewport(0, 0, js::gl::canvas_width(), js::gl::canvas_height());
 		js::gl::clear_color(0.0, 0.0, 0.0, 1.0);
 		js::gl::clear(js::gl::COLOR_BUFFER_BIT);
