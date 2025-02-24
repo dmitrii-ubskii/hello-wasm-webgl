@@ -1,18 +1,19 @@
 #![no_std]
 
+use core::ffi::CStr;
+
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo<'_>) -> ! {
 	if let Some(message) = info.message().as_str() {
-		print(message);
+		print_str(message);
 	}
 	loop {}
 }
 
 mod js;
 
-fn print(str: &str) {
-	let (ptr, len) = str_into_parts(str);
-	unsafe { js::print(ptr, len) };
+fn print_str(str: &str) {
+	unsafe { js::print_len(str.as_ptr(), str.len()) };
 }
 
 fn str_into_parts(str: &str) -> (*const u8, usize) {
@@ -30,7 +31,7 @@ const TRIANGLE: [f32; 9] = [
 pub extern "C" fn init() {
 	let vert = compile_shader(
 		js::gl::VERTEX_SHADER,
-		"#version 300 es
+		c"#version 300 es
 		in vec4 position;
 		void main() {
 			gl_Position = position;
@@ -39,7 +40,7 @@ pub extern "C" fn init() {
 
 	let frag = compile_shader(
 		js::gl::FRAGMENT_SHADER,
-		"#version 300 es
+		c"#version 300 es
 		precision highp float;
 		out vec4 outColor;
 		void main() {
@@ -87,9 +88,8 @@ fn link_shader_program(vert: usize, frag: usize) -> usize {
 	unsafe { js::gl::link_shader_program(vert, frag) }
 }
 
-fn compile_shader(shader_type: u32, source: &str) -> usize {
-	let (ptr, len) = str_into_parts(source);
-	unsafe { js::gl::compile_shader(shader_type, ptr, len) }
+fn compile_shader(shader_type: u32, source: &CStr) -> usize {
+	unsafe { js::gl::compile_shader(shader_type, source.as_ptr()) }
 }
 
 fn get_attrib_location(shader_program: usize, attribute_name: &str) -> usize {

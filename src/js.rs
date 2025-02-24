@@ -1,6 +1,6 @@
 pub(super) mod gl {
 	unsafe extern "C" {
-		pub(crate) fn compile_shader(type_: u32, ptr: *const u8, len: usize) -> usize;
+		pub(crate) fn compile_shader(type_: u32, source: *const i8) -> usize;
 		pub(crate) fn link_shader_program(vert: usize, frag: usize) -> usize;
 		pub(crate) fn use_program(program: usize);
 		pub(crate) fn get_attrib_location(
@@ -45,5 +45,5 @@ pub(super) mod gl {
 }
 
 unsafe extern "C" {
-	pub(super) fn print(ptr: *const u8, len: usize);
+	pub(super) fn print_len(ptr: *const u8, len: usize);
 }

@@ -4,10 +4,15 @@ var gl;
 var glObjects = [];
 
 var env = {};
-env.print = function (ptr, len) { console.log(decode_string(ptr, len)); };
+env.print = function (ptr) { console.log(get_string(ptr)); };
+env.print_len = function (ptr, len) {
+	console.log(new TextDecoder("utf8").decode(new Uint8Array(wasm.memory.buffer, ptr, len)));
+};
 
-function decode_string(ptr, len) {
-	var bytes = new Uint8Array(wasm.memory.buffer, ptr, len);
+function get_string(ptr) {
+	var buf = new Uint8Array(wasm.memory.buffer, ptr);
+	var len = buf.indexOf(0);
+	var bytes = buf.slice(0, len);
 	return new TextDecoder("utf8").decode(bytes);
 }
 
@@ -21,9 +26,9 @@ function resizeCanvas() {
 	}
 }
 
-function glCompileShader(type, source_ptr, source_len) {
+function glCompileShader(type, source_ptr) {
 	var shader = gl.createShader(type);
-	gl.shaderSource(shader, decode_string(source_ptr, source_len));
+	gl.shaderSource(shader, get_string(source_ptr));
 	gl.compileShader(shader);
 	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
 		const info = gl.getShaderInfoLog(shader);
@@ -65,8 +70,8 @@ function glCreateVertexArray() {
 	return index;
 }
 
-function glGetAttribLocation(program, str_ptr, str_len) {
-	var name = decode_string(str_ptr, str_len);
+function glGetAttribLocation(program, str_ptr) {
+	var name = get_string(str_ptr);
 	return gl.getAttribLocation(glObjects[program], name);
 }
 
