@@ -16,10 +16,11 @@ rust_2018_idioms = "deny"
 [lints.clippy]
 pedantic = { level = "warn", priority = -1 }
 
+cast_precision_loss = "allow"
 cast_sign_loss = "allow"
 missing_errors_doc = "allow"
 missing_panics_doc = "allow"
-naive_bytecount = "allow"    # no recommending crates
+naive_bytecount = "allow"     # no recommending crates
 
 # restrictions
 allow_attributes_without_reason = "deny"
