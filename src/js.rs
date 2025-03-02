@@ -6,11 +6,7 @@ pub(super) mod gl {
 		pub(crate) fn get_uniform_location(program: usize, ptr: *const i8) -> usize;
 		pub(crate) fn uniform_2f(location: usize, v0: f32, v1: f32);
 
-		pub(crate) fn get_attrib_location(
-			shader_program: usize,
-			ptr: *const u8,
-			len: usize,
-		) -> usize;
+		pub(crate) fn get_attrib_location(shader_program: usize, ptr: *const i8) -> usize;
 		pub(crate) fn canvas_width() -> u32;
 		pub(crate) fn canvas_height() -> u32;
 		pub(crate) fn viewport(x: u32, y: u32, width: u32, height: u32);
