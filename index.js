@@ -68,6 +68,14 @@ function glBufferData(target, size, data, usage) {
 
 function main() {
 	canvas = document.getElementById("canvas");
+	canvas.addEventListener("click", function (click) {
+		wasm.mouse_click(
+			(click.x * 2 - canvas.width) / canvas.height,
+			-(click.y * 2 - canvas.height) / canvas.height,
+		);
+		wasm.render();
+	});
+
 	gl = canvas.getContext("webgl2");
 
 	env.compile_shader = glCompileShader;

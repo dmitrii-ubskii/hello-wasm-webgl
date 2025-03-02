@@ -1,34 +1,35 @@
 #![no_std]
 
+mod atomic;
+mod js;
+
 use core::{
 	ffi::CStr,
 	sync::atomic::{AtomicUsize, Ordering},
 };
 
+use atomic::AtomicF32Array;
+
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo<'_>) -> ! {
+	print_str("Panic!");
 	if let Some(message) = info.message().as_str() {
 		print_str(message);
 	}
 	loop {}
 }
 
-mod js;
-
 fn print_str(str: &str) {
 	unsafe { js::print_len(str.as_ptr(), str.len()) };
 }
 
-fn str_into_parts(str: &str) -> (*const u8, usize) {
-	(str.as_ptr(), str.len())
-}
-
 #[rustfmt::skip]
-const TRIANGLE: [f32; 9] = [
+static TRIANGLE: AtomicF32Array<9> = AtomicF32Array::new([
 	-0.7, -0.6, 0.0,
 	 0.7, -0.6, 0.0,
 	 0.0,  0.6, 0.0,
-];
+]);
+static VERTEX: AtomicUsize = AtomicUsize::new(0);
 
 static SHADER: AtomicUsize = AtomicUsize::new(0);
 
@@ -61,8 +62,20 @@ pub extern "C" fn init() {
 	let shader_program = link_shader_program(vert, frag);
 	SHADER.store(shader_program, Ordering::Relaxed);
 	unsafe { js::gl::use_program(shader_program) };
+}
 
-	let position_attr_location = get_attrib_location(shader_program, "position");
+#[unsafe(no_mangle)]
+pub extern "C" fn mouse_click(x: f32, y: f32) {
+	let i = VERTEX.fetch_add(1, Ordering::Relaxed) % 3;
+
+	TRIANGLE.store(3 * i, x);
+	TRIANGLE.store(3 * i + 1, y);
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn render() {
+	let shader_program = SHADER.load(Ordering::Relaxed);
+	let position_attr_location = get_attrib_location(shader_program, c"position");
 
 	unsafe {
 		let buffer = js::gl::create_buffer();
@@ -82,14 +95,8 @@ pub extern "C" fn init() {
 
 		js::gl::vertex_attrib_pointer(position_attr_location, 3, js::gl::FLOAT, false, 0, 0);
 		js::gl::enable_vertex_attrib_array(position_attr_location);
-	}
-}
 
-#[unsafe(no_mangle)]
-pub extern "C" fn render() {
-	unsafe {
-		let location =
-			js::gl::get_uniform_location(SHADER.load(Ordering::Relaxed), c"screen_size".as_ptr());
+		let location = js::gl::get_uniform_location(shader_program, c"screen_size".as_ptr());
 		js::gl::uniform_2f(location, js::gl::canvas_width() as f32, js::gl::canvas_height() as f32);
 		js::gl::viewport(0, 0, js::gl::canvas_width(), js::gl::canvas_height());
 		js::gl::clear_color(0.0, 0.0, 0.0, 1.0);
@@ -106,7 +113,6 @@ fn compile_shader(shader_type: u32, source: &CStr) -> usize {
 	unsafe { js::gl::compile_shader(shader_type, source.as_ptr()) }
 }
 
-fn get_attrib_location(shader_program: usize, attribute_name: &str) -> usize {
-	let (ptr, len) = str_into_parts(attribute_name);
-	unsafe { js::gl::get_attrib_location(shader_program, ptr, len) }
+fn get_attrib_location(shader_program: usize, attribute_name: &CStr) -> usize {
+	unsafe { js::gl::get_attrib_location(shader_program, attribute_name.as_ptr()) }
 }
