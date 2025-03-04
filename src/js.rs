@@ -45,4 +45,5 @@ pub(super) mod gl {
 
 unsafe extern "C" {
 	pub(super) fn print_len(ptr: *const u8, len: usize);
+	pub(super) fn call_me(f: extern "C" fn(*const u8), data: *const u8);
 }

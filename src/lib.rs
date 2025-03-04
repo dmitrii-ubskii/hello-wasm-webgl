@@ -6,6 +6,7 @@ mod js;
 use core::{
 	arch::wasm32::unreachable,
 	ffi::CStr,
+	ptr::null,
 	sync::atomic::{AtomicUsize, Ordering},
 };
 
@@ -35,7 +36,19 @@ static VERTEX: AtomicUsize = AtomicUsize::new(0);
 static SHADER: AtomicUsize = AtomicUsize::new(0);
 
 #[unsafe(no_mangle)]
+pub extern "C" fn f(_: *const u8) {
+	print_str("f");
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn g(_: *const u8) {
+	print_str("g");
+}
+
+#[unsafe(no_mangle)]
 pub extern "C" fn init() {
+	unsafe { js::call_me(f, null()) };
+	unsafe { js::call_me(g, null()) };
 	let vert = compile_shader(
 		js::gl::VERTEX_SHADER,
 		c"#version 300 es

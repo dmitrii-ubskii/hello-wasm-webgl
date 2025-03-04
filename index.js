@@ -105,6 +105,8 @@ function main() {
 		glObject(gl.getUniformLocation(glObjects[program], get_string(uniform)));
 	env.uniform_2f = (loc, v0, v1) => gl.uniform2f(glObjects[loc], v0, v1);
 
+	env.call_me = (f, arg) => wasm.__indirect_function_table.get(f)(arg);
+
 	fetch("output.wasm").then(res => res.arrayBuffer()).then(function (bytes) {
 		'use strict';
 		var wasmBytes = new Uint8Array(bytes);
