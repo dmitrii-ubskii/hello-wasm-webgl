@@ -1,8 +1,11 @@
 #![no_std]
+extern crate alloc;
 
+mod allocator;
 mod atomic;
 mod js;
 
+use alloc::string::String;
 use core::{
 	arch::wasm32::unreachable,
 	ffi::CStr,
@@ -42,13 +45,15 @@ pub extern "C" fn f(_: *const u8) {
 
 #[unsafe(no_mangle)]
 pub extern "C" fn g(_: *const u8) {
-	print_str("g");
+	let s = String::from("hello");
+	print_str(&s);
 }
 
 #[unsafe(no_mangle)]
 pub extern "C" fn init() {
 	unsafe { js::call_me(f, null()) };
 	unsafe { js::call_me(g, null()) };
+
 	let vert = compile_shader(
 		js::gl::VERTEX_SHADER,
 		c"#version 300 es

@@ -110,7 +110,6 @@ function main() {
 	fetch("output.wasm").then(res => res.arrayBuffer()).then(function (bytes) {
 		'use strict';
 		var wasmBytes = new Uint8Array(bytes);
-		env.memory = new WebAssembly.Memory({ initial: 0 });
 		WebAssembly.instantiate(wasmBytes, { env: env }).then(function (asm) {
 			wasm = asm.instance.exports;
 			wasm.init();
