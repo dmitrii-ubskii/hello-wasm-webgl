@@ -4,6 +4,7 @@ mod atomic;
 mod js;
 
 use core::{
+	arch::wasm32::unreachable,
 	ffi::CStr,
 	sync::atomic::{AtomicUsize, Ordering},
 };
@@ -16,7 +17,7 @@ fn panic(info: &core::panic::PanicInfo<'_>) -> ! {
 	if let Some(message) = info.message().as_str() {
 		print_str(message);
 	}
-	loop {}
+	unreachable()
 }
 
 fn print_str(str: &str) {
